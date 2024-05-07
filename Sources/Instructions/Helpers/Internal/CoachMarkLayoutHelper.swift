@@ -28,7 +28,8 @@ class CoachMarkLayoutHelper {
 
         if passNumber == 0 {
             computedProperties = CoachMarkComputedProperties(layoutDirection: self.layoutDirection,
-                                                             horizontalAlignment: .centered)
+                                                             horizontalAlignment: .centered,
+                                                             verticalAlignment: .centered)
             offset = 0
         } else {
             computedProperties = computeProperties(for: coachMark, inParentView: parentView)
@@ -36,20 +37,55 @@ class CoachMarkLayoutHelper {
                                  inParentView: parentView)
         }
 
-        switch computedProperties.horizontalAlignment {
-        case .leading:
-            coachMarkView.changeArrowPosition(to: .leading, offset: offset)
-            return leadingConstraints(for: coachMarkView, withCoachMark: coachMark,
-                                      inParentView: parentView)
-        case .centered:
-            coachMarkView.changeArrowPosition(to: .center, offset: offset)
-            return middleConstraints(for: coachMarkView, withCoachMark: coachMark,
-                                     inParentView: parentView)
-        case .trailing:
-            coachMarkView.changeArrowPosition(to: .trailing, offset: offset)
-            return trailingConstraints(for: coachMarkView, withCoachMark: coachMark,
-                                       inParentView: parentView)
+        if coachMark.arrowOrientation == .top || coachMark.arrowOrientation == .bottom {
+            switch computedProperties.horizontalAlignment {
+                case .leading:
+                    coachMarkView.changeArrowPosition(to: .leading, offset: offset)
+                    return leadingConstraints(for: coachMarkView, withCoachMark: coachMark,
+                                              inParentView: parentView)
+                case .centered, .none:
+                    coachMarkView.changeArrowPosition(to: .center, offset: offset)
+                    return middleConstraints(for: coachMarkView, withCoachMark: coachMark,
+                                             inParentView: parentView)
+                case .trailing:
+                    coachMarkView.changeArrowPosition(to: .trailing, offset: offset)
+                    return trailingConstraints(for: coachMarkView, withCoachMark: coachMark,
+                                               inParentView: parentView)
+            }
+        } else {
+            switch computedProperties.verticalAlignment {
+                case .centered:
+                    coachMarkView.changeArrowPosition(to: .verticalCenter, offset: offset)
+                    
+                    return verticalMiddleConstraints(for: coachMarkView, withCoachMark: coachMark, inParentView: parentView)
+                case .none:
+                    return []
+            }
         }
+    }
+    
+    func verticalMiddleConstraints(for coachMarkView: CoachMarkView, withCoachMark coachMark: CoachMark, inParentView parentView: UIView) -> [NSLayoutConstraint] {
+        let maxWidth = min(coachMark.maxWidth, parentView.bounds.width - 2 * coachMark.horizontalMargin)
+        
+        let visualFormat = "V:[currentCoachMarkView(<=\(maxWidth)@1000)]"
+        
+        var constraints = NSLayoutConstraint.constraints(withVisualFormat: visualFormat,
+                                                         options: NSLayoutConstraint.FormatOptions(rawValue: 0),
+                                                         metrics: nil,
+                                                         views: ["currentCoachMarkView": coachMarkView])
+        
+        var offset: CGFloat = 0
+        
+        if let pointOfInterest = coachMark.pointOfInterest {
+            offset = parentView.center.y - pointOfInterest.y
+        }
+        
+        constraints.append(NSLayoutConstraint(
+            item: coachMarkView, attribute: .centerY, relatedBy: .equal,
+            toItem: parentView, attribute: .centerY,
+            multiplier: 1, constant: -offset
+        ))
+        return constraints
     }
 
     private func leadingConstraints(for coachMarkView: CoachMarkView,
@@ -161,15 +197,15 @@ class CoachMarkLayoutHelper {
         var arrowOffset: CGFloat
 
         switch properties.horizontalAlignment {
-        case .centered:
-            arrowOffset = middleArrowOffset(for: coachMark, withProperties: properties,
-                                            inParentView: parentView)
-        case .leading:
-            arrowOffset = leadingArrowOffset(for: coachMark, withProperties: properties,
-                                             inParentView: parentView)
-        case .trailing:
-            arrowOffset = trailingArrowOffset(for: coachMark, withProperties: properties,
-                                              inParentView: parentView)
+            case .centered, .none:
+                arrowOffset = middleArrowOffset(for: coachMark, withProperties: properties,
+                                                inParentView: parentView)
+            case .leading:
+                arrowOffset = leadingArrowOffset(for: coachMark, withProperties: properties,
+                                                 inParentView: parentView)
+            case .trailing:
+                arrowOffset = trailingArrowOffset(for: coachMark, withProperties: properties,
+                                                  inParentView: parentView)
         }
 
         return arrowOffset
@@ -277,26 +313,56 @@ class CoachMarkLayoutHelper {
             return .centered
         }
     }
+    
+    private func computeVerticalAlingment(of coachMark: CoachMark, inFrame frame: CGRect) -> CoachMarkVerticalAlignment {
+        if let _ = coachMark.pointOfInterest, frame.size.height > 0 {
+            return .centered
+        } else {
+            if coachMark.pointOfInterest == nil {
+                print(ErrorMessage.Info.nilPointOfInterestCenterAlignment)
+            } else {
+                print(ErrorMessage.Warning.frameWithNoWidth)
+            }
+        }
+        return .centered
+    }
 
     private func computeProperties(for coachMark: CoachMark,
                                    inParentView parentView: UIView)
     -> CoachMarkComputedProperties {
-        let horizontalAlignment = computeHorizontalAlignment(of: coachMark,
-                                                           forLayoutDirection: layoutDirection,
-                                                           inFrame: parentView.frame)
+        var horizontalAlignment: CoachMarkHorizontalAlignment?
+        var verticalAlignment: CoachMarkVerticalAlignment?
+        
+        switch coachMark.arrowOrientation {
+            case .top, .bottom:
+                horizontalAlignment = computeHorizontalAlignment(of: coachMark,
+                                                                 forLayoutDirection: layoutDirection,
+                                                                 inFrame: parentView.frame)
+            case .leading, .trailing:
+                verticalAlignment = computeVerticalAlingment(of: coachMark,
+                                                             inFrame: parentView.frame)
+            case .none:
+                break
+        }
 
         return CoachMarkComputedProperties(
             layoutDirection: layoutDirection,
-            horizontalAlignment: horizontalAlignment
+            horizontalAlignment: horizontalAlignment,
+            verticalAlignment: verticalAlignment
         )
     }
 }
 
 struct CoachMarkComputedProperties {
     let layoutDirection: UIUserInterfaceLayoutDirection
-    let horizontalAlignment: CoachMarkHorizontalAlignment
+    let horizontalAlignment: CoachMarkHorizontalAlignment?
+    let verticalAlignment: CoachMarkVerticalAlignment?
 }
 
 enum CoachMarkHorizontalAlignment {
     case leading, centered, trailing
+}
+
+enum CoachMarkVerticalAlignment {
+    case centered
 }

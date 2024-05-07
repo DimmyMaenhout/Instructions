@@ -82,16 +82,30 @@ class CoachMarkView: UIView {
     func changeArrowPosition(to position: ArrowPosition, offset: CGFloat) {
 
         guard let arrowUIView = arrowUIView else { return }
-
-        if innerConstraints.arrowXposition != nil {
-            self.removeConstraint(innerConstraints.arrowXposition!)
+        
+        switch position {
+            case .center, .leading, .trailing:
+                if innerConstraints.arrowXposition != nil {
+                    self.removeConstraint(innerConstraints.arrowXposition!)
+                }
+                
+                innerConstraints.arrowXposition = coachMarkLayoutHelper.horizontalArrowConstraints(for: (bodyView: bodyUIView, arrowView: arrowUIView), withPosition: position, horizontalOffset: offset)
+                
+                innerConstraints.arrowXposition?.isActive = true
+            case .verticalCenter:
+                
+                if innerConstraints.arrowYposition != nil {
+                    self.removeConstraint(innerConstraints.arrowYposition!)
+                }
+                
+                innerConstraints.arrowYposition = coachMarkLayoutHelper.verticalArrowConstraints(
+                    for: (bodyView: bodyUIView, arrowView: arrowUIView),
+                    withPosition: position,
+                    verticalOffset: offset
+                )
+                
+                innerConstraints.arrowYposition?.isActive = true
         }
-
-        innerConstraints.arrowXposition = coachMarkLayoutHelper.horizontalArrowConstraints(
-            for: (bodyView: bodyUIView, arrowView: arrowUIView), withPosition: position,
-            horizontalOffset: offset)
-
-        innerConstraints.arrowXposition?.isActive = true
     }
 
     // MARK: - Private Method
@@ -101,23 +115,32 @@ class CoachMarkView: UIView {
         translatesAutoresizingMaskIntoConstraints = false
 
         self.addSubview(bodyUIView)
-        self.addConstraints(bodyUIView.makeConstraintToFillSuperviewHorizontally())
 
         if let arrowUIView = arrowUIView, let arrowOrientation = self.arrowOrientation {
             self.addSubview(arrowUIView)
 
-            innerConstraints.arrowXposition = coachMarkLayoutHelper.horizontalArrowConstraints(
-                for: (bodyView: bodyUIView, arrowView: arrowUIView), withPosition: .center,
-                horizontalOffset: 0)
-
-            innerConstraints.arrowXposition?.isActive = true
-            self.addConstraints(coachMarkLayoutHelper.verticalConstraints(
-                for: (bodyView: bodyUIView, arrowView: arrowUIView), in: self,
-                withProperties: (orientation: arrowOrientation, verticalArrowOffset: arrowOffset)
-            ))
+            switch arrowOrientation {
+                case .top, .bottom:
+                    innerConstraints.arrowXposition = coachMarkLayoutHelper.horizontalArrowConstraints(for: (bodyView: bodyUIView, arrowView: arrowUIView), withPosition: .center, horizontalOffset: 0)
+                    
+                    innerConstraints.arrowXposition?.isActive = true
+                    self.addConstraints(bodyUIView.makeConstraintToFillSuperviewHorizontally())
+                    self.addConstraints(coachMarkLayoutHelper.verticalConstraints(for: (bodyView: bodyUIView, arrowView: arrowUIView), in: self,
+                                                                                  withProperties: (orientation: arrowOrientation, verticalArrowOffset: arrowOffset)))
+                case .leading, .trailing:
+                    innerConstraints.arrowYposition = coachMarkLayoutHelper.verticalArrowConstraints(for: (bodyView: bodyUIView, arrowView: arrowUIView), withPosition: .verticalCenter, verticalOffset: 0)
+                    
+                    innerConstraints.arrowYposition?.isActive = true
+                    
+                    self.addConstraints(bodyUIView.makeConstraintToFillSuperviewVertically())
+                    self.addConstraints(coachMarkLayoutHelper.horizontalConstraints(for: (bodyView: bodyUIView, arrowView: arrowUIView), in: self,
+                                                                                    withProperties: (orientation: arrowOrientation, verticalArrowOffset: arrowOffset)))
+            }
         } else {
+            self.addConstraints(bodyUIView.makeConstraintToFillSuperviewHorizontally())
             bodyUIView.topAnchor.constraint(equalTo: topAnchor).isActive = true
             bodyUIView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+                    
         }
     }
 }
@@ -133,6 +156,9 @@ private struct CoachMarkViewConstraints {
     /// The horizontal position of the arrow, likely to be at the center of the
     /// cutout path.
     var arrowXposition: NSLayoutConstraint?
+    
+    // The vertical position of the arrow
+    var arrowYposition: NSLayoutConstraint?
 
     /// The constraint making the body stick to its parent.
     var bodyStickToParent: NSLayoutConstraint?
