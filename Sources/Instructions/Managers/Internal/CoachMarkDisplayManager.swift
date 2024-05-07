@@ -255,6 +255,11 @@ class CoachMarkDisplayManager {
 
             coachMarkView.bottomAnchor.constraint(equalTo: parentView.bottomAnchor,
                                                   constant: constant).isActive = true
+        } else if coachMark.arrowOrientation! == .leading || coachMark.arrowOrientation! == .trailing {
+            let constant = cutoutPath.bounds.midY - parentView.frame.size.height / 2
+            
+            coachMarkView.centerYAnchor.constraint(equalTo: parentView.centerYAnchor,
+                                                   constant: constant).isActive = true
         } else {
             let constant = (cutoutPath.bounds.origin.y +
                 cutoutPath.bounds.size.height) + offset
