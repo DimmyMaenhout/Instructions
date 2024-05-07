@@ -9,4 +9,7 @@ import UIKit
 public enum CoachMarkArrowOrientation {
     case top
     case bottom
+    
+    case leading
+    case trailing
 }

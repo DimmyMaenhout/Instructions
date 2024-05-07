@@ -7,15 +7,22 @@ import UIKit
 enum CoachMarkPosition {
     var layoutAttribute: NSLayoutConstraint.Attribute {
         switch self {
-        case .leading: return .leading
-        case .center: return .centerX
-        case .trailing: return .trailing
+            case .leading: return .leading
+            case .center: return .centerX
+            case .trailing: return .trailing
+            case .verticalCenter: return .centerY
         }
     }
 
+    // horizontal
+    
     case leading
     case center
     case trailing
+    
+    // vertical
+    
+    case verticalCenter // centerY
 }
 
 /// Define the horizontal position of the arrow.
