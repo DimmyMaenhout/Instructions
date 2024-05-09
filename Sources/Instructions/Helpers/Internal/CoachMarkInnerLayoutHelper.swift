@@ -48,11 +48,11 @@ class CoachMarkInnerLayoutHelper {
         
         if properties.orientation == .leading {
             constraints = leadingOrientationConstraints(for: coachMarkViews, in: parentView,
-                                                        verticalArrowOffset: horizontalOffset )
+                                                        verticalArrowOffset: horizontalOffset)
         } else if properties.orientation == .trailing {
-            constraints = trailingOrientationConstraints(for: coachMarkViews, in: parentView, verticalArrowOffset: horizontalOffset)
+            constraints = trailingOrientationConstraints(for: coachMarkViews, in: parentView,
+                                                         verticalArrowOffset: horizontalOffset)
         }
-        
         return constraints
     }
 
@@ -90,6 +90,7 @@ class CoachMarkInnerLayoutHelper {
         
         return [
             coachMarkViews.arrowView.trailingAnchor.constraint(equalTo: coachMarkViews.bodyView.leadingAnchor, constant: offset),
+            parentView.leadingAnchor.constraint(equalTo: coachMarkViews.arrowView.leadingAnchor),
             coachMarkViews.bodyView.trailingAnchor.constraint(equalTo: parentView.trailingAnchor)
         ]
     }
@@ -99,6 +100,7 @@ class CoachMarkInnerLayoutHelper {
         
         return [
             coachMarkViews.arrowView.leadingAnchor.constraint(equalTo: coachMarkViews.bodyView.trailingAnchor, constant: offset),
+            parentView.trailingAnchor.constraint(equalTo: coachMarkViews.arrowView.trailingAnchor),
             coachMarkViews.bodyView.leadingAnchor.constraint(equalTo: parentView.leadingAnchor)
         ]
     }

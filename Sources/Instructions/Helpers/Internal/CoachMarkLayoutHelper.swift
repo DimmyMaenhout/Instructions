@@ -67,7 +67,7 @@ class CoachMarkLayoutHelper {
     func verticalMiddleConstraints(for coachMarkView: CoachMarkView, withCoachMark coachMark: CoachMark, inParentView parentView: UIView) -> [NSLayoutConstraint] {
         let maxWidth = min(coachMark.maxWidth, parentView.bounds.width - 2 * coachMark.horizontalMargin)
         
-        let visualFormat = "V:[currentCoachMarkView(<=\(maxWidth)@1000)]"
+        let visualFormat = "H:[currentCoachMarkView(<=\(maxWidth)@1000)]"
         
         var constraints = NSLayoutConstraint.constraints(withVisualFormat: visualFormat,
                                                          options: NSLayoutConstraint.FormatOptions(rawValue: 0),
@@ -315,7 +315,7 @@ class CoachMarkLayoutHelper {
     }
     
     private func computeVerticalAlingment(of coachMark: CoachMark, inFrame frame: CGRect) -> CoachMarkVerticalAlignment {
-        if let _ = coachMark.pointOfInterest, frame.size.height > 0 {
+        if let pointOfInterest = coachMark.pointOfInterest, frame.size.height > 0 {
             return .centered
         } else {
             if coachMark.pointOfInterest == nil {
