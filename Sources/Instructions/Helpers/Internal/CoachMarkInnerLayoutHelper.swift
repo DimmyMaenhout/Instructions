@@ -96,7 +96,7 @@ class CoachMarkInnerLayoutHelper {
     }
     
     private func trailingOrientationConstraints(for coachMarkViews: CoachMarkViews, in parentView: UIView, verticalArrowOffset: CGFloat) -> [NSLayoutConstraint] {
-        let offset = adaptedOffset(for: CoachMarkArrowOrientation.leading, offset: verticalArrowOffset)
+        let offset = adaptedOffset(for: CoachMarkArrowOrientation.trailing, offset: verticalArrowOffset)
         
         return [
             coachMarkViews.arrowView.leadingAnchor.constraint(equalTo: coachMarkViews.bodyView.trailingAnchor, constant: offset),
