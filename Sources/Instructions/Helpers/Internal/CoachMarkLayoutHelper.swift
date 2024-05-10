@@ -85,6 +85,36 @@ class CoachMarkLayoutHelper {
             toItem: parentView, attribute: .centerY,
             multiplier: 1, constant: -offset
         ))
+        
+        guard let arrowOrientation = coachMark.arrowOrientation else { return constraints }
+        
+        if arrowOrientation == .trailing {
+            let pointOfInterestX = coachMark.pointOfInterest?.x ?? 0
+            let cutoutPathWidth = coachMark.cutoutPath?.bounds.width ?? 0
+            let trailingOffset = -(parentView.bounds.maxX - pointOfInterestX) - (cutoutPathWidth / 2)
+            
+            constraints.append(NSLayoutConstraint(
+                item: coachMarkView, attribute: .trailing, relatedBy: .equal,
+                toItem: parentView, attribute: .trailing,
+                multiplier: 1, constant: trailingOffset))
+            
+            constraints.append(NSLayoutConstraint(
+                item: coachMarkView, attribute: .leading, relatedBy: .greaterThanOrEqual,
+                toItem: parentView, attribute: .leading,
+                multiplier: 1, constant: 0))
+        } else if arrowOrientation == .leading {
+            let leadingOffset = coachMark.cutoutPath?.bounds.maxX ?? 0
+            
+            constraints.append(NSLayoutConstraint(
+                item: coachMarkView, attribute: .leading, relatedBy: .equal,
+                toItem: parentView, attribute: .leading,
+                multiplier: 1, constant: leadingOffset))
+            
+            constraints.append(NSLayoutConstraint(
+                item: coachMarkView, attribute: .trailing, relatedBy: .lessThanOrEqual,
+                toItem: parentView, attribute: .trailing,
+                multiplier: 1, constant: 0))
+        }
         return constraints
     }
 
@@ -196,16 +226,23 @@ class CoachMarkLayoutHelper {
                              inParentView parentView: UIView) -> CGFloat {
         var arrowOffset: CGFloat
 
-        switch properties.horizontalAlignment {
-            case .centered, .none:
-                arrowOffset = middleArrowOffset(for: coachMark, withProperties: properties,
-                                                inParentView: parentView)
-            case .leading:
-                arrowOffset = leadingArrowOffset(for: coachMark, withProperties: properties,
-                                                 inParentView: parentView)
-            case .trailing:
-                arrowOffset = trailingArrowOffset(for: coachMark, withProperties: properties,
-                                                  inParentView: parentView)
+        if coachMark.arrowOrientation! == .top || coachMark.arrowOrientation == .bottom {
+            switch properties.horizontalAlignment {
+                case .centered, .none:
+                    arrowOffset = middleArrowOffset(for: coachMark, withProperties: properties,
+                                                    inParentView: parentView)
+                case .leading:
+                    arrowOffset = leadingArrowOffset(for: coachMark, withProperties: properties,
+                                                     inParentView: parentView)
+                case .trailing:
+                    arrowOffset = trailingArrowOffset(for: coachMark, withProperties: properties,
+                                                      inParentView: parentView)
+            }
+        } else {
+            switch properties.verticalAlignment {
+                case .centered, .none:
+                    arrowOffset = verticalMiddleArrowOffset(for: coachMark, withProperties: properties, inParentView: parentView)
+            }
         }
 
         return arrowOffset
@@ -260,6 +297,14 @@ class CoachMarkLayoutHelper {
         } else {
             return pointOfInterest.x - coachMark.horizontalMargin - compensation
         }
+    }
+    
+    private func verticalMiddleArrowOffset(for coachMark: CoachMark, withProperties properties: CoachMarkComputedProperties, inParentView parentView: UIView) -> CGFloat {
+        guard let pointOfInterest = coachMark.pointOfInterest else {
+            print(ErrorMessage.Info.nilPointOfInterestZeroOffset)
+            return 0
+        }
+        return parentView.center.y - pointOfInterest.y
     }
 
     private func safeAreaCompensation(for parentView: UIView,
@@ -323,8 +368,8 @@ class CoachMarkLayoutHelper {
             } else {
                 print(ErrorMessage.Warning.frameWithNoWidth)
             }
+            return .centered
         }
-        return .centered
     }
 
     private func computeProperties(for coachMark: CoachMark,
