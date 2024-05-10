@@ -27,7 +27,7 @@ public struct CoachMark {
     public var gapBetweenCoachMarkAndCutoutPath: CGFloat = 2.0
 
     /// Maximum width for a coach mark.
-    public var maxWidth: CGFloat = 350
+    public var maxWidth: CGFloat = 272
 
     /// Trailing and leading margin of the coach mark.
     public var horizontalMargin: CGFloat = 20
