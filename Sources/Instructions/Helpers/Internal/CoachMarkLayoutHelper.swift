@@ -226,7 +226,7 @@ class CoachMarkLayoutHelper {
                              inParentView parentView: UIView) -> CGFloat {
         var arrowOffset: CGFloat
 
-        if coachMark.arrowOrientation! == .top || coachMark.arrowOrientation == .bottom {
+        if coachMark.arrowOrientation! == .top || coachMark.arrowOrientation! == .bottom {
             switch properties.horizontalAlignment {
                 case .centered, .none:
                     arrowOffset = middleArrowOffset(for: coachMark, withProperties: properties,
